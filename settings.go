@@ -1,7 +1,8 @@
 package local
 
 import (
-	"user"
+	"errors"
+	"os/user"
 )
 
 // Settings for defining a local project
@@ -10,14 +11,14 @@ type Settings struct {
 
 	User user.User
 
-	ProjectRootPath    string
-	ExecPath           string
-	Paths SettingScopePaths
+	ProjectRootPath string
+	ExecPath        string
+	Paths           SettingScopePaths
 }
 
 // SettingScopePaths keeps an ordered list of scope paths by scope key
 type SettingScopePaths struct {
-	pMap map[string]property
+	pMap   map[string]string
 	pOrder []string
 }
 
@@ -27,7 +28,7 @@ func NewSettingScopePaths() *SettingScopePaths {
 }
 
 // Add adds a new property to the list, keyed by property id
-func (ssp *SettingScopePaths) set(scope string, path string) {
+func (ssp *SettingScopePaths) Set(scope string, path string) {
 	ssp.safe()
 	if _, found := ssp.pMap[scope]; !found {
 		ssp.pOrder = append(ssp.pOrder, scope)
@@ -39,9 +40,9 @@ func (ssp *SettingScopePaths) set(scope string, path string) {
 func (ssp *SettingScopePaths) Get(scope string) (string, error) {
 	ssp.safe()
 	if prop, found := ssp.pMap[scope]; found {
-		prop, nil
+		return prop, nil
 	} else {
-		return prop, error.Error(&handler_base_config.ScopeNotFoundError{scope: scope})
+		return prop, errors.New("Scope not found")
 	}
 }
 
@@ -54,7 +55,7 @@ func (ssp *SettingScopePaths) Order() []string {
 // Safe lazy initializer
 func (ssp *SettingScopePaths) safe() {
 	if ssp.pMap == nil {
-		ssp.pMap = map[string]Property{}
+		ssp.pMap = map[string]string{}
 		ssp.pOrder = []string{}
 	}
 }

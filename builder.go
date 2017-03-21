@@ -1,39 +1,67 @@
 package local
 
-type Builder struct {
-	api_app_builder.SimpleBaseBuilder
+import (
+	coach_api "github.com/james-nesbitt/coach-api"
+	coach_base "github.com/james-nesbitt/coach-base"
+)
 
-	parent api_api.API
+// Builder Standard local coach api.Builder
+type Builder struct {
 	settings Settings
-	ops api_operation.Operations
+	parent   coach_api.API
+
+	implementations []string
 }
 
+// NewBuilder Constructor for Builder from Settings
 func NewBuilder(settings Settings) *Builder {
 	return &Builder{
-		settings: settings,
+		settings:        settings,
+		implementations: []string{},
 	}
 }
 
-func (local *Builder) Builder() api_builder.Builder {
-	return api_builder.Builder(local)
+// Builder explicilty convert this struct to an api.Builder
+func (b *Builder) Builder() coach_api.Builder {
+	return coach_api.Builder(b)
 }
 
-func (local *Builder) SetParent(parent api_api.API) {
-	base.parent = parent
+// Id provides a unique machine name for the Builder
+func (b *Builder) Id() string {
+	return "local.standard"
 }
 
-func (local *Builder) Builder() api_builder.Builder {
-	return api_builder.Builder(local)
+// SetParent Provides the API reference to the Builder which may use it's operations internally
+func (b *Builder) SetParent(parent coach_api.API) {
+	b.parent = parent
 }
 
-func (local *Builder) Activate([]string, SettingsProvider) {
+// Activate Enable keyed implementations, providing settings for those handler implementations
+func (b *Builder) Activate(implementations []string, settings coach_api.SettingsProvider) error {
+	for _, implementation := range implementations {
+		found := false
+		for _, exist := range b.implementations {
+			if exist == implementation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			b.implementations = append(implementations, implementation)
+		}
+	}
 
+	return nil
 }
 
-func (local *Builder) Validate() api_result.Result {
-	
+// Validates Ask the builder if it is happy and willing to provide operations
+func (b *Builder) Validate() coach_api.Result {
+	return coach_base.MakeSuccessfulResult()
 }
 
-func (local *Builder) Operations() api_operation.Operations {
-	return local.ops
+// Operations provide any Builder user with a set of Operation objects
+func (b *Builder) Operations() coach_api.Operations {
+	ops := coach_base.NewOperations()
+
+	return ops.Operations()
 }
