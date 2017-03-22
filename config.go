@@ -8,3 +8,10 @@ import (
 func (b *Builder) ConfigOperations() coach_api.Operations {
 	return coach_base.NewOperations()
 }
+
+
+type ConfigResolver struct {
+
+}
+
+func (cr *ConfigResolver) ListScopes

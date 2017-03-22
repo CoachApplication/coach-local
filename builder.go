@@ -65,3 +65,15 @@ func (b *Builder) Operations() coach_api.Operations {
 
 	return ops.Operations()
 }
+
+func (b *Builder) configOperations() {
+	configOperations := handler_configconnector.GetOperations(
+		handler_configconnect.NewfileConfigConnector(
+			b.settings.Path.Order()
+			func(path, scope string) string { return path.Join(path, scope + ".yml")},
+		),
+		handler_configconnect.NewymlConfigInterpreter(
+
+		),
+	)
+}
