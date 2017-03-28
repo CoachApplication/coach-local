@@ -16,6 +16,10 @@ type Settings struct {
 	Paths           SettingScopePaths
 }
 
+/**
+ * @TODO refactor to use coach-utils/NewOrderedMap()
+ */
+
 // SettingScopePaths keeps an ordered list of scope paths by scope key
 type SettingScopePaths struct {
 	pMap   map[string]string

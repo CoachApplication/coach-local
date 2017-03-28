@@ -3,8 +3,9 @@ package local
 import (
 	api "github.com/james-nesbitt/coach-api"
 	base "github.com/james-nesbitt/coach-base"
-	base_configprovider "github.com/james-nesbitt/coach-base/handler/configprovider"
-	base_configprovider_file "github.com/james-nesbitt/coach-base/handler/configprovider/file"
+	base_config_provider "github.com/james-nesbitt/coach-config/provider"
+	base_config_provider_file "github.com/james-nesbitt/coach-config/provider/file"
+	base_config_provider_yaml "github.com/james-nesbitt/coach-config/provider/yaml"
 )
 
 // Builder Standard local coach api.Builder
@@ -14,7 +15,7 @@ type Builder struct {
 
 	implementations []string
 
-	sharedConfigProvider base_configprovider.Provider
+	sharedConfigProvider base_config_provider.Provider
 }
 
 // NewBuilder Constructor for Builder from Settings
@@ -70,13 +71,13 @@ func (b *Builder) Operations() api.Operations {
 	return ops.Operations()
 }
 
-func (b *Builder) configProvider() base_configprovider.Provider {
+func (b *Builder) configProvider() base_config_provider.Provider {
 	if b.sharedConfigProvider == nil {
 		/**
 		 * Stay with me here
 		 *
 		 * Config here is going to come from a Backend multiplexing config provider, but it is going to use
-		 * only a single backend, which will be a FileConnector, that loads YML files based on an arrangment
+		 * only a single backend, which will be a FileConnector, that loads YML files based on an arrangement
 		 * of files where subfolders are used for different scopes, and the YML files are named after the
 		 * config keys.
 		 * In the local case, each of the settings Paths is considered a valid scope.
@@ -86,11 +87,11 @@ func (b *Builder) configProvider() base_configprovider.Provider {
 		 * Because it should be easy to layer backends so that we can provide defaults for some cases, like
 		 * missing files for some config.  We will want to add a Default provider very soon.
 		 * There are many options for additional backend, included buffered connectors, but there is not yet
-		 * any failover mechanism for a backend.  This is something that is needed.
+		 * any fail-over mechanism for a backend.  This is something that is needed.
 		 */
 
 		// This provider
-		tbcp := base_configprovider.NewBackendConfigProvider()
+		tbcp := base_config_provider.NewBackendConfigProvider()
 		b.sharedConfigProvider = tbcp.Provider()
 
 		// Here is where we convert the settings paths into an ordered list of scopes, and a map of scope paths
@@ -104,10 +105,23 @@ func (b *Builder) configProvider() base_configprovider.Provider {
 		// all of our files will be .yml files (we will have no prefix)
 		suffix := ".yml"
 
-		paths := base_configprovider_file.NewScopedFilePaths(scopes, scopeMap, "", suffix)
-		con := base_configprovider_file.NewFileConnector(paths.FilePaths())
+		// So now we can build our file path interpreter based on the captured file path definitions above.
+		paths := base_config_provider_file.NewScopedFilePaths(scopes, scopeMap, "", suffix)
 
-		tbcp.Add(NewYamlBackend(con.Connector(), base_configprovider.AllBackendUsage{}.BackendUsage()))
+		/**
+		 * Build a Composite backend based on:
+		 *  Connector: a files connecter build using the scope file paths approach
+		 *  Usage: All usage (we will change this in the future to include a default scope handler)
+		 *  Factory: The config provider factory will be a yaml factory
+		 */
+
+		con := base_config_provider_file.NewFileConnector(paths.FilePaths()).Connector() // how to connect to files
+		fac := base_config_provider_yaml.NewFactory(con).Factory()                       // how to build Config from the connector
+		use := base_config_provider.AllBackendUsage{}.BackendUsage()                     // under what circumstances to use this backend
+
+		backend := base_config_provider.NewCompositeBackend(con, use, fac).Backend()
+
+		tbcp.Add(backend)
 	}
 	return b.sharedConfigProvider
 }
@@ -116,8 +130,8 @@ func (b *Builder) ConfigOperations() api.Operations {
 	prov := b.configProvider()
 	ops := base.NewOperations()
 
-	ops.Add(base_configprovider.NewListOperation(prov).Operation())
-	ops.Add(base_configprovider.NewGetOperation(prov).Operation())
+	ops.Add(base_config_provider.NewListOperation(prov).Operation())
+	ops.Add(base_config_provider.NewGetOperation(prov).Operation())
 
 	return ops.Operations()
 }
