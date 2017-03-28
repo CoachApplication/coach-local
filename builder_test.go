@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"context"
-	config "github.com/CoachApplication/coach-config"
-	local "github.com/CoachApplication/coach-local"
+	config "github.com/CoachApplication/config"
+	local "github.com/CoachApplication/handler-local"
 	"time"
 )
 
@@ -19,9 +19,9 @@ func TestBuilder_Operations(t *testing.T) {
 
 	if len(list) == 0 {
 		t.Error("LocalBuilder returned no operations")
-	} else if !isInSlice(config.OPERATION_KEY_CONFIG_GET, list) {
+	} else if !isInSlice(config.OPERATION_ID_CONFIG_GET, list) {
 		t.Error("LocalBuilder did not provide a config.get operation")
-	} else if !isInSlice(config.OPERATION_KEY_CONFIG_LIST, list) {
+	} else if !isInSlice(config.OPERATION_ID_CONFIG_LIST, list) {
 		t.Error("LocalBuilder did not provide a config.list operation")
 	}
 }

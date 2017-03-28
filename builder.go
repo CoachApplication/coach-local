@@ -2,12 +2,12 @@ package local
 
 import (
 	"context"
-	api "github.com/CoachApplication/coach-api"
-	base "github.com/CoachApplication/coach-base"
-	"github.com/CoachApplication/coach-config"
-	config_provider "github.com/CoachApplication/coach-config/provider"
-	config_provider_file "github.com/CoachApplication/coach-config/provider/file"
-	config_provider_yaml "github.com/CoachApplication/coach-config/provider/yaml"
+	api "github.com/CoachApplication/api"
+	base "github.com/CoachApplication/base"
+	"github.com/CoachApplication/config"
+	config_provider "github.com/CoachApplication/config/provider"
+	config_provider_file "github.com/CoachApplication/config/provider/file"
+	config_provider_yaml "github.com/CoachApplication/config/provider/yaml"
 )
 
 // Builder Standard local coach api.Builder

@@ -7,9 +7,9 @@ import (
 	"path"
 	"testing"
 
-	config_provider "github.com/CoachApplication/coach-config/provider"
-	config_provider_file "github.com/CoachApplication/coach-config/provider/file"
-	config_provider_yaml "github.com/CoachApplication/coach-config/provider/yaml"
+	config_provider "github.com/CoachApplication/config/provider"
+	config_provider_file "github.com/CoachApplication/config/provider/file"
+	config_provider_yaml "github.com/CoachApplication/config/provider/yaml"
 )
 
 // Centralize making of test local.Settings so that we can be sure of them
