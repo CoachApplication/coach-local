@@ -1,26 +1,30 @@
 package local
 
 import (
+	"context"
 	api "github.com/CoachApplication/coach-api"
 	base "github.com/CoachApplication/coach-base"
-	base_config_provider "github.com/CoachApplication/coach-config/provider"
-	base_config_provider_file "github.com/CoachApplication/coach-config/provider/file"
-	base_config_provider_yaml "github.com/CoachApplication/coach-config/provider/yaml"
+	"github.com/CoachApplication/coach-config"
+	config_provider "github.com/CoachApplication/coach-config/provider"
+	config_provider_file "github.com/CoachApplication/coach-config/provider/file"
+	config_provider_yaml "github.com/CoachApplication/coach-config/provider/yaml"
 )
 
 // Builder Standard local coach api.Builder
 type Builder struct {
+	context  context.Context
 	settings Settings
 	parent   api.API
 
 	implementations []string
 
-	sharedConfigProvider base_config_provider.Provider
+	sharedConfigProvider config_provider.Provider
 }
 
 // NewBuilder Constructor for Builder from Settings
-func NewBuilder(settings Settings) *Builder {
+func NewBuilder(ctx context.Context, settings Settings) *Builder {
 	return &Builder{
+		context:         ctx,
 		settings:        settings,
 		implementations: []string{},
 	}
@@ -68,10 +72,19 @@ func (b *Builder) Validate() api.Result {
 func (b *Builder) Operations() api.Operations {
 	ops := base.NewOperations()
 
+	for _, imp := range b.implementations {
+		switch imp {
+		case "config":
+			ops.Merge(b.configOperations())
+		case "project":
+			ops.Merge(b.projectOperations())
+		}
+	}
+
 	return ops.Operations()
 }
 
-func (b *Builder) configProvider() base_config_provider.Provider {
+func (b *Builder) configProvider() config_provider.Provider {
 	if b.sharedConfigProvider == nil {
 		/**
 		 * Stay with me here
@@ -91,7 +104,7 @@ func (b *Builder) configProvider() base_config_provider.Provider {
 		 */
 
 		// This provider
-		tbcp := base_config_provider.NewBackendConfigProvider()
+		tbcp := config_provider.NewBackendConfigProvider()
 		b.sharedConfigProvider = tbcp.Provider()
 
 		// Here is where we convert the settings paths into an ordered list of scopes, and a map of scope paths
@@ -106,7 +119,7 @@ func (b *Builder) configProvider() base_config_provider.Provider {
 		suffix := ".yml"
 
 		// So now we can build our file path interpreter based on the captured file path definitions above.
-		paths := base_config_provider_file.NewScopedFilePaths(scopes, scopeMap, "", suffix)
+		paths := config_provider_file.NewScopedFilePaths(scopes, scopeMap, "", suffix)
 
 		/**
 		 * Build a Composite backend based on:
@@ -115,23 +128,34 @@ func (b *Builder) configProvider() base_config_provider.Provider {
 		 *  Factory: The config provider factory will be a yaml factory
 		 */
 
-		con := base_config_provider_file.NewFileConnector(paths.FilePaths()).Connector() // how to connect to files
-		fac := base_config_provider_yaml.NewFactory(con).Factory()                       // how to build Config from the connector
-		use := base_config_provider.AllBackendUsage{}.BackendUsage()                     // under what circumstances to use this backend
+		con := config_provider_file.NewFileConnector(paths.FilePaths()).Connector() // how to connect to files
+		fac := config_provider_yaml.NewFactory(con).Factory()                       // how to build Config from the connector
+		use := (&config_provider.AllBackendUsage{}).BackendUsage()                  // under what circumstances to use this backend
 
-		backend := base_config_provider.NewCompositeBackend(con, use, fac).Backend()
+		backend := config_provider.NewCompositeBackend(con, use, fac).Backend()
 
 		tbcp.Add(backend)
 	}
 	return b.sharedConfigProvider
 }
 
-func (b *Builder) ConfigOperations() api.Operations {
+// ConfigWrapper build a config.Wrapper from the builder ConfigOperations
+func (b *Builder) configWrapper() config.Wrapper {
+	return config.NewStandardWrapper(b.configOperations(), b.context).Wrapper()
+}
+
+func (b *Builder) configOperations() api.Operations {
 	prov := b.configProvider()
 	ops := base.NewOperations()
 
-	ops.Add(base_config_provider.NewListOperation(prov).Operation())
-	ops.Add(base_config_provider.NewGetOperation(prov).Operation())
+	ops.Add(config_provider.NewListOperation(prov).Operation())
+	ops.Add(config_provider.NewGetOperation(prov).Operation())
+
+	return ops.Operations()
+}
+
+func (b *Builder) projectOperations() api.Operations {
+	ops := base.NewOperations()
 
 	return ops.Operations()
 }
