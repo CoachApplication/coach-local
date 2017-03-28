@@ -1,11 +1,11 @@
 package local
 
 import (
-	api "github.com/james-nesbitt/coach-api"
-	base "github.com/james-nesbitt/coach-base"
-	base_config_provider "github.com/james-nesbitt/coach-config/provider"
-	base_config_provider_file "github.com/james-nesbitt/coach-config/provider/file"
-	base_config_provider_yaml "github.com/james-nesbitt/coach-config/provider/yaml"
+	api "github.com/CoachApplication/coach-api"
+	base "github.com/CoachApplication/coach-base"
+	base_config_provider "github.com/CoachApplication/coach-config/provider"
+	base_config_provider_file "github.com/CoachApplication/coach-config/provider/file"
+	base_config_provider_yaml "github.com/CoachApplication/coach-config/provider/yaml"
 )
 
 // Builder Standard local coach api.Builder

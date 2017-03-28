@@ -6,7 +6,7 @@ import (
 	"path"
 	"testing"
 
-	coach_local "github.com/james-nesbitt/coach-local"
+	coach_local "github.com/CoachApplication/coach-local"
 )
 
 func testBuilder_Builders(t *testing.T) *coach_local.Builder {
