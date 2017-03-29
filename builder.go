@@ -8,6 +8,8 @@ import (
 	config_provider "github.com/CoachApplication/config/provider"
 	config_provider_file "github.com/CoachApplication/config/provider/file"
 	config_provider_yaml "github.com/CoachApplication/config/provider/yaml"
+	"github.com/CoachApplication/project"
+	project_configwrapper "github.com/CoachApplication/project/configwrapper"
 )
 
 // Builder Standard local coach api.Builder
@@ -155,7 +157,17 @@ func (b *Builder) configOperations() api.Operations {
 }
 
 func (b *Builder) projectOperations() api.Operations {
+	wr := b.configWrapper()
 	ops := base.NewOperations()
+
+	ba := project.NewFactoryOperationBase(project_configwrapper.NewFactory(wr))
+
+	ops.Add(project.NewNameOperation(*ba).Operation())
+	ops.Add(project.NewLabelOperation(*ba).Operation())
+
+	ops.Add(project.NewEnvironmentGetOperation(*ba).Operation())
+	ops.Add(project.NewEnvironmentListOperation(*ba).Operation())
+	ops.Add(project.NewEnvironmentMapOperation(*ba).Operation())
 
 	return ops.Operations()
 }

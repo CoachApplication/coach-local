@@ -1,0 +1,5 @@
+# Used for some straight integer testing
+integers:
+  - 1
+  - 2
+  - 3

@@ -6,10 +6,11 @@ import (
 	"context"
 	config "github.com/CoachApplication/config"
 	local "github.com/CoachApplication/handler-local"
+	"github.com/CoachApplication/project"
 	"time"
 )
 
-func TestBuilder_Operations(t *testing.T) {
+func TestBuilder_Operations_Config(t *testing.T) {
 	b := local.MakeLocalBuilder(t, nil)
 
 	b.Activate([]string{"config"}, nil)
@@ -19,10 +20,42 @@ func TestBuilder_Operations(t *testing.T) {
 
 	if len(list) == 0 {
 		t.Error("LocalBuilder returned no operations")
-	} else if !isInSlice(config.OPERATION_ID_GET, list) {
-		t.Error("LocalBuilder did not provide a config.get operation")
-	} else if !isInSlice(config.OPERATION_ID_LIST, list) {
-		t.Error("LocalBuilder did not provide a config.list operation")
+	} else {
+
+		for _, id := range []string{
+			config.OPERATION_ID_GET,
+			config.OPERATION_ID_LIST,
+		} {
+			if !isInSlice(id, list) {
+				t.Errorf("LocalBuilder did not provide a %s operation", id)
+			}
+		}
+	}
+}
+
+func TestBuilder_Operations_Project(t *testing.T) {
+	b := local.MakeLocalBuilder(t, nil)
+
+	b.Activate([]string{"project"}, nil)
+
+	ops := b.Operations()
+	list := ops.Order()
+
+	if len(list) == 0 {
+		t.Error("LocalBuilder returned no operations")
+	} else {
+		for _, id := range []string{
+			project.OPERATION_ID_NAME,
+			project.OPERATION_ID_LABEL,
+			project.OPERATION_ID_ENV_MAP,
+			project.OPERATION_ID_ENV_MAP,
+			project.OPERATION_ID_LABEL,
+			project.OPERATION_ID_LABEL,
+		} {
+			if !isInSlice(id, list) {
+				t.Errorf("LocalBuilder did not provide a %s operation", id)
+			}
+		}
 	}
 }
 
@@ -49,43 +82,19 @@ func TestBuilder_ConfigWrapper(t *testing.T) {
 		t.Error("ConfigWrapper from LocalBuilder Operations() gave an error on List()", err)
 	} else if len(ls) == 0 {
 		t.Error("ConfigWrapper from LocalBuilder Returned no Config keys", ls)
-	} else if scA, err := cw.Get("A"); err != nil {
+	} else if scB, err := cw.Get("integers"); err != nil {
 		t.Error("ConfigWrapper produced an error during Get()", err, ls)
 	} else {
 		var ts local.TestStruct
 
-		if dcA, err := scA.Get("one"); err != nil {
+		if dcB, err := scB.Get("default"); err != nil {
 			t.Error("ConfigWrapper ScopedConfigList returned an error when retrieving a valid Config: ", err.Error())
 		} else {
-			res := dcA.Get(&ts)
+			res := dcB.Get(&ts)
 			<-res.Finished()
 
 			if !res.Success() {
 				t.Error("ConfigWrapper ScopedConfigList returned an failure when unmarshalling a Config: ", res.Errors())
-			}
-		}
-	}
-
-	if ls, err := cw.List(); err != nil {
-		t.Error("ConfigWrapper from LocalBuilder Operations() gave an error on List()", err)
-	} else if len(ls) == 0 {
-		t.Error("ConfigWrapper from LocalBuilder Returned no Config keys", ls)
-	} else if scA, err := cw.Get("A"); err != nil {
-		t.Error("ConfigWrapper produced an error during Get()", err, ls)
-	} else {
-		scopes := scA.Order()
-		t.Log("Discovered scopes :", scopes)
-
-		var ts local.TestStruct
-
-		if dcA, err := scA.Get(config.CONFIG_SCOPE_DEFAULT); err != nil {
-			t.Error("ConfigWrapper ScopedConfigList returned an error when retrieving the default Config: ", err.Error())
-		} else {
-			res := dcA.Get(&ts)
-			<-res.Finished()
-
-			if !res.Success() {
-				t.Error("ConfigWrapper ScopedConfigList returned an failure when unmarshalling the default Config: ", res.Errors())
 			}
 		}
 	}

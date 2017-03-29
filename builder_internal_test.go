@@ -20,7 +20,7 @@ func MakeLocalSettings(t *testing.T) Settings {
 	t.Logf("Builder Base [user: %s][wd: %s]", curUser.Name, wd)
 
 	localPaths := NewSettingScopePaths()
-	for _, scope := range []string{"one", "two", "three"} {
+	for _, scope := range []string{"default", "user", "project"} {
 		scopePath := path.Join(wd, "test", "config", scope)
 		localPaths.Set(scope, scopePath)
 		t.Logf("Builder Base Added scope: [scope: %s][path: %s]", scope, scopePath)
@@ -83,11 +83,11 @@ func TestBuilder_configProviderSteps(t *testing.T) {
 	t.Log("Provider:Keys()", prov.Keys())
 	t.Log("Provider:Scopes()", prov.Scopes())
 
-	if len(prov.Keys()) != 4 {
-		t.Error("TestBuilder filepaths returned the wrong number of keys")
+	if len(prov.Keys()) != 3 {
+		t.Error("TestBuilder filepaths returned the wrong number of keys: ", prov.Keys())
 	}
 	if len(prov.Scopes()) != 3 {
-		t.Error("TestBuilder filepaths returned the wrong number of keys:")
+		t.Error("TestBuilder filepaths returned the wrong number of scopes: ", prov.Scopes())
 	}
 }
 
@@ -99,25 +99,25 @@ func TestBuilder_configProvider(t *testing.T) {
 	t.Log("Provider:Keys()", prov.Keys())
 	t.Log("Provider:Scopes()", prov.Scopes())
 
-	if len(prov.Keys()) != 4 {
+	if len(prov.Keys()) != 3 {
 		t.Error("TestBuilder config.Provider returned the wrong number of keys:", prov.Keys())
 	}
 	if len(prov.Scopes()) != 3 {
 		t.Error("TestBuilder config.Provider returned the wrong number of keys:", prov.Keys())
 	}
 
-	var valA TestStruct
-	if scA, err := prov.Get("A", "one"); err != nil {
+	var valB TestStruct
+	if scB, err := prov.Get("integers", "default"); err != nil {
 		t.Error("Testbuilder config.Provider returned an error retrieving valid key scope pair")
 	} else {
-		res := scA.Get(&valA)
+		res := scB.Get(&valB)
 		<-res.Finished()
 
 		if !res.Success() {
 			t.Error("TestBuilder config.Provider gave an error marshalling config to TestStruct:", res.Errors())
-		} else if &valA == nil {
+		} else if &valB == nil {
 			t.Error("TestBuilder config.Provider failed to marshal config properly.  It is still nil")
-		} else if valAInts := valA.Integers; len(valAInts) == 0 {
+		} else if valAInts := valB.Integers; len(valAInts) == 0 {
 			t.Error("TestBuilder config.Provider failed to marshal config properly.  Not enough integers")
 		} else if valAInts[0] != 1 {
 			t.Error("TestBuilder config.Provider failed to marshal config properly.  Wrong integers value")
