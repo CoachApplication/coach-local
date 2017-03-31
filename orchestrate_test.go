@@ -10,7 +10,7 @@ import (
 func TestBuilder_Operations_Dockercli(t *testing.T) {
 	b := handler_local.MakeLocalBuilder(t, nil)
 
-	b.Activate([]string{"dockercli"}, nil)
+	b.Activate([]string{"orchestrate"}, nil)
 
 	ops := b.Operations()
 	list := ops.Order()
