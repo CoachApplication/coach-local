@@ -32,5 +32,3 @@ func TestBuilder_Operations_Project(t *testing.T) {
 		}
 	}
 }
-
-

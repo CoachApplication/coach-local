@@ -78,4 +78,3 @@ func (b *Builder) configOperations() api.Operations {
 
 	return ops.Operations()
 }
-

@@ -2,12 +2,13 @@ package local_test
 
 import (
 	"testing"
-	local "github.com/CoachApplication/handler-local"
+
 	handler_dockercli_stack "github.com/CoachApplication/handler-dockercli/stack"
+	handler_local "github.com/CoachApplication/handler-local"
 )
 
 func TestBuilder_Operations_Dockercli(t *testing.T) {
-	b := local.MakeLocalBuilder(t, nil)
+	b := handler_local.MakeLocalBuilder(t, nil)
 
 	b.Activate([]string{"dockercli"}, nil)
 
