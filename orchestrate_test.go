@@ -27,4 +27,3 @@ func TestBuilder_Operations_Dockercli(t *testing.T) {
 		}
 	}
 }
-git add ./
